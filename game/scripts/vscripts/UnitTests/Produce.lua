@@ -1,6 +1,6 @@
 local CTestSuite = require("TestSuite")
 local Produce = require("Produce")
-local CUtilities = require("Utilities")
+
 local ProduceTestSuite = CTestSuite("ProduceTestSuite")
 
 function ProduceTestSuite:Test_Call()

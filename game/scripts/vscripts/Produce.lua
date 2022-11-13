@@ -8,9 +8,11 @@ local NewChannel = function ()
         bIsClosed = false
     }
 
+    ChannelMetaTable = ChannelMetaTable or {}
+
     ---@generic T
     ---@return T | nil
-    function Channel:__call()
+    function ChannelMetaTable:__call()
         if not self.bIsClosed then
             local SplitCoroutineReturn = function (Head, ...) return Head, {...} end
             local _, ReturnValues = SplitCoroutineReturn(coroutine.resume(self.CoroutineHandle))
@@ -40,7 +42,7 @@ local NewChannel = function ()
             if coroutine.status(self.CoroutineHandle) == "dead" then
                 self.bIsClosed = true
             else
-                if (Function ~= nil) then
+                if Function then
                     Function(CUtilities.Unpack(ReturnValues))
                 end
             end
@@ -59,7 +61,7 @@ local NewChannel = function ()
         self.bIsClosed = true
     end
 
-    return setmetatable(Channel, Channel)
+    return setmetatable(Channel, ChannelMetaTable)
 end
 
 ---@generic T

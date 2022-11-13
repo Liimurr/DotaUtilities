@@ -37,7 +37,8 @@ local NewTestSuite = function(TestName)
     ---@param Actual any
     ---@param Expected any
     function TestSuite:AssertEqual(Actual, Expected)
-        if Actual ~= Expected then
+        local Result = Actual == Expected
+        if not Result then
             Error(string.format("AssertEqual failed. %s: Actual: %s, Expected: %s", GetAssertTraceBackMsg(), Actual, Expected))
         else
             if (self:PrintOnSuccess()) then 
