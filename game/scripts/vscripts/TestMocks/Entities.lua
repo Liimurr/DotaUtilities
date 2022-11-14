@@ -22,11 +22,11 @@ local NewEntitiesMock = function ()
 end
 
 local NewCEntitiesMock = function ()
-    local CEntities = {}
-    function CEntities:__call()
+    CEntitiesMetaTable = CEntitiesMetaTable or {}
+    function CEntitiesMetaTable:__call()
         return NewEntitiesMock()
     end
-    return setmetatable(CEntities, CEntities)
+    return setmetatable({}, CEntitiesMetaTable)
 end
 
 return NewCEntitiesMock()

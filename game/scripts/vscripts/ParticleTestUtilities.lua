@@ -1,5 +1,6 @@
 local Produce = require("Produce")
 local Iota = require("ProduceExtensions.Iota")
+local ProduceValues = require("ProduceExtensions.ProduceValues")
 
 local CParticleTestUtilities = {}
 
@@ -62,11 +63,15 @@ CParticleTestUtilities.TestParticleGenerator = function (
         end
     end
 
-    -- local ParticleAttachmentEntities = {}
-    -- local ProduceParticleAttachmentEntities = ProduceTestParticleEntities(Entities, ProduceValues(EntityNames))
-    -- function ParticleGenerator:Activate()
-    --     ProduceParticleAttachmentEntities:ConsumeEach(function (OwningEntity) table.insert(ParticleAttachmentEntities, OwningEntity) end)
-    -- end
+    local ParticleEntities = {}
+    local ProduceParticleEntities = ProduceTestParticleEntities(Entities, ProduceValues(EntityNames))
+    function ParticleGenerator:Activate()
+        ParticleEntities = ProduceParticleEntities:Buffer()
+    end
+
+    function ParticleGenerator:_GetFoundParticleEntities()
+        return ParticleEntities
+    end
 
     -- local InitializeParticle = function (ParticleAsset, AttachmentMode, SetParticleControls, ParticleAttachmentEntity, ParticleControlsEntity)
     --     local ParticleIndex = ParticleManager:CreateParticle(ParticleAsset, AttachmentMode, ParticleAttachmentEntity)

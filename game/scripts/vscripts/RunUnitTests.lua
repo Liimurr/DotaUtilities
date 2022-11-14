@@ -46,7 +46,7 @@ return function ()
     RunUnitTest("Experiments")
     RunUnitTest("Produce")
     RunUnitTest("ProduceExtensions")
-    RunUnitTest("Particle")
+    RunUnitTest("ParticleTestUtilities")
     RunUnitTest("TestMocks")
     print(AllTestsStatus())
 end

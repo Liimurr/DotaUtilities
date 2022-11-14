@@ -34,9 +34,10 @@ end
 
 
 function ExperimentsSuite:Test_Eq()
+    local __eq_callcount = 0
     ObjectMetaTable = ObjectMetaTable or {
         __eq = function (Self, Other)
-            print("Object:Eq")
+            __eq_callcount = __eq_callcount  + 1
             return true
         end
     }
@@ -48,7 +49,9 @@ function ExperimentsSuite:Test_Eq()
     
     local A = NewObject()
     local B = NewObject()
-    self:AssertEqual(A, B)
+    local Result = A == B
+    self:AssertEqual(__eq_callcount, 1)
+    self:AssertEqual(Result, true)
 end
 
 return ExperimentsSuite
