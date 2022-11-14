@@ -8,7 +8,8 @@ local RunUnitTest = function (ModuleName)
     return TestSuite:IsPassing()
 end
 
-return function ()
+---@param ... string ModuleUnitTestNames 
+return function (...)
     local AllPassing = true
     local FailingUnitTests = {}
     local RunUnitTest = function (ModuleName) 
@@ -41,12 +42,9 @@ return function ()
         end
     end
     
-    RunUnitTest("Utilities")
-    RunUnitTest("TestSuite")
-    RunUnitTest("Experiments")
-    RunUnitTest("Produce")
-    RunUnitTest("ProduceExtensions")
-    RunUnitTest("ParticleTestUtilities")
-    RunUnitTest("TestMocks")
+    for _, UnitTest in ipairs(CUtilities.Pack(...)) do
+        RunUnitTest(UnitTest)
+    end
+
     print(AllTestsStatus())
 end

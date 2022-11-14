@@ -17,7 +17,15 @@ function Activate()
 	print("AddonTemplate:InitGameMode")
 	GameRules.AddonTemplate:InitGameMode()
 
-	RunUnitTests()
+	RunUnitTests(
+    	"Utilities",
+    	"TestSuite",
+    	"Experiments",
+    	"Produce",
+    	"ProduceExtensions",
+    	"ParticleTestUtilities",
+    	"TestMocks"
+	)
 end
 
 function CAddonTemplateGameMode:InitGameMode()
