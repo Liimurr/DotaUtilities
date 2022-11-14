@@ -1,6 +1,15 @@
+local CUtilities = require("Utilities")
 local Produce = require("Produce")
 local Iota = require("ProduceExtensions.Iota")
 local ProduceValues = require("ProduceExtensions.ProduceValues")
+
+local MakeExpectNonNilArgument = function (FunctionName) 
+    return function (Arg, ArgPosition) return CUtilities.ExpectNonNilArgument(Arg, FunctionName, ArgPosition) end 
+end
+
+local MakeExpectArrayOfSizeGreaterThanOrEqualTo = function (FunctionName)
+    return function (Arg, ArgPosition, ArraySize) return CUtilities.ExpectArrayOfSizeGreaterThanOrEqualTo(Arg, FunctionName, ArgPosition, ArraySize) end
+end
 
 local CParticleTestUtilities = {}
 
@@ -9,7 +18,7 @@ local CParticleTestUtilities = {}
 ---@param StartNum number
 ---@param EndNum number
 ---@return Channel
-local ProduceTestParticleNames = function (StartChar, EndChar, StartNum, EndNum) 
+CParticleTestUtilities.ProduceTestParticleNames = function (StartChar, EndChar, StartNum, EndNum) 
     return Produce(function ()
         local ToParticleName = function (Letter, Number) return "particle_"..Letter..tostring(Number) end
         for Letter in Iota(string.byte(StartChar), string.byte(EndChar)) do
@@ -26,7 +35,11 @@ end
 local ProduceTestParticleEntities = function (Entities, ProduceParticleNames) 
     return Produce(function ()
         for ParticleName in ProduceParticleNames do
-            coroutine.yield(Entities:FindByName(ParticleName))
+            local Entity = Entities:FindByName(nil, ParticleName)
+            if not Entity then
+                print("WARNING: Entity "..ParticleName.." did not exist")
+            end
+            coroutine.yield(Entity)
         end
     end)
 end
@@ -43,6 +56,14 @@ local ProduceTestAttachmentModes = function (AttachmentModes)
     end)
 end
 
+---@param GlobalContext any
+---@param Entities any
+---@param ParticleManager any
+---@param ParticleAssets string[]
+---@param AttachmentModes integer[]
+---@param EntityNames string[]
+---@param SetParticleControlsFunctions fun(ParticleIndex : integer, ParticleControlsContext : ParticleControlsContext)[]
+---@return ParticleGenerator | nil
 CParticleTestUtilities.TestParticleGenerator = function (
     GlobalContext,
     Entities,
@@ -52,6 +73,22 @@ CParticleTestUtilities.TestParticleGenerator = function (
     EntityNames,
     SetParticleControlsFunctions
 )
+    local ExpectNonNilArgument = MakeExpectNonNilArgument("TestParticleGenerator")
+    local ExpectArrayOfSizeGreaterThanOrEqualTo = MakeExpectArrayOfSizeGreaterThanOrEqualTo("TestParticleGenerator")
+
+    if
+        not ExpectNonNilArgument(GlobalContext, 1) or
+        not ExpectNonNilArgument(Entities, 2) or
+        not ExpectNonNilArgument(ParticleManager, 3) or
+        not ExpectArrayOfSizeGreaterThanOrEqualTo(ParticleAssets, 1, 4) or
+        not ExpectArrayOfSizeGreaterThanOrEqualTo(AttachmentModes, 1, 5) or
+        not ExpectArrayOfSizeGreaterThanOrEqualTo(EntityNames, 1, 6)
+    then
+        return nil
+    end
+
+    SetParticleControlsFunctions = SetParticleControlsFunctions or {}
+
     ---@class ParticleGenerator
     local ParticleGenerator = {
         GlobalContext = GlobalContext
@@ -73,41 +110,48 @@ CParticleTestUtilities.TestParticleGenerator = function (
         return ParticleEntities
     end
 
-    -- local InitializeParticle = function (ParticleAsset, AttachmentMode, SetParticleControls, ParticleAttachmentEntity, ParticleControlsEntity)
-    --     local ParticleIndex = ParticleManager:CreateParticle(ParticleAsset, AttachmentMode, ParticleAttachmentEntity)
+    local InitializeParticle = function (ParticleAsset, AttachmentMode, SetParticleControls, ParticleAttachmentEntity, ParticleControlsEntity)
+        local ParticleIndex = ParticleManager:CreateParticle(ParticleAsset, AttachmentMode, ParticleAttachmentEntity)
 
-    --     local ParticleControlsContext = {
-    --         Asset = ParticleAsset,
-    --         AttachmentMode = AttachmentMode,
-    --         Entity = ParticleControlsEntity
-    --     }
-    --     SetParticleControls(ParticleIndex, ParticleControlsContext)
-    -- end
-    -- local GetParticleAttachmentEntityFunctions = {
-    --     function (Entity) return Entity end,
-    --     function () return nil end
-    -- }
-    -- table.insert(SetParticleControlsFunctions, function () end)
-    -- function ParticleGenerator:PreGameInit()
-    --     local NextEntity = ProduceValues(ParticleAttachmentEntities)
-    --     for _, ParticleAsset in pairs(ParticleAssets) do
-    --         for _, GetParticleAttachmentEntity in pairs(GetParticleAttachmentEntityFunctions) do
-    --             for _, SetParticleControls in pairs(SetParticleControlsFunctions) do
-    --                 for _, AttachmentMode in pairs(AttachmentModes) do
-    --                     Entity = NextEntity()
-    --                     AttachmentEntity = GetParticleAttachmentEntity(Entity)
-    --                     InitializeParticle(
-    --                         ParticleAsset,
-    --                         AttachmentMode,
-    --                         SetParticleControls,
-    --                         AttachmentEntity,
-    --                         Entity
-    --                     )
-    --                 end
-    --             end
-    --         end
-    --     end
-    -- end
+        ---@class ParticleControlsContext
+        local ParticleControlsContext = {
+            Asset = ParticleAsset,
+            AttachmentMode = AttachmentMode,
+            Entity = ParticleControlsEntity
+        }
+        SetParticleControls(ParticleIndex, ParticleControlsContext)
+    end
+    local GetParticleAttachmentEntityFunctions = {
+        function (Entity) return Entity end,
+        function () return nil end
+    }
+    table.insert(SetParticleControlsFunctions, function () end)
+    function ParticleGenerator:PreGameInit()
+        local NextEntity = ProduceValues(ParticleEntities)
+        for _, ParticleAsset in pairs(ParticleAssets) do
+            for _, GetParticleAttachmentEntity in pairs(GetParticleAttachmentEntityFunctions) do
+                for _, SetParticleControls in pairs(SetParticleControlsFunctions) do
+                    for _, AttachmentMode in pairs(AttachmentModes) do
+
+                        Entity = NextEntity()
+                        if not Entity then
+                            local NumRequiredEntities = #ParticleAssets * #GetParticleAttachmentEntityFunctions * #SetParticleControlsFunctions * #AttachmentModes
+                            error("Ran out of particle entities. Need "..NumRequiredEntities..", but got "..#ParticleEntities)
+                        end
+
+                        AttachmentEntity = GetParticleAttachmentEntity(Entity)
+                        InitializeParticle(
+                            ParticleAsset,
+                            AttachmentMode,
+                            SetParticleControls,
+                            AttachmentEntity,
+                            Entity
+                        )
+                    end
+                end
+            end
+        end
+    end
 
     return ParticleGenerator
 end

@@ -1,7 +1,12 @@
 local NewEntitiesMock = function ()
     local EntitiesMock = { RegisteredEntities = {} }
 
-    function EntitiesMock:FindByName(Name)
+    ---comment
+    ---@param PreviousEntity nil
+    ---@param Name string
+    ---@return Entity?
+    function EntitiesMock:FindByName(PreviousEntity, Name)
+        if (PreviousEntity) then error("PreviousEntity is currently not supported by this mock interface") end
         local Result = self.RegisteredEntities[Name]
         return Result
     end

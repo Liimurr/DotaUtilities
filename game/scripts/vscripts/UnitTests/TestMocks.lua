@@ -50,10 +50,10 @@ function TestMocksTestSuite:Test_Entities()
         CEntityMock("MyParticle03", CVectorMock(7, 8, 9)),
     })
 
-    self:AssertEqual(Entities:FindByName("MyParticle01"):GetAbsOrigin(), CVectorMock(1, 2, 3))
-    self:AssertEqual(Entities:FindByName("MyParticle02"):GetAbsOrigin(), CVectorMock(4, 5, 6))
-    self:AssertEqual(Entities:FindByName("MyParticle03"):GetAbsOrigin(), CVectorMock(7, 8, 9))
-    self:AssertEqual(Entities:FindByName("MyParticle04"), nil)
+    self:AssertEqual(Entities:FindByName(nil, "MyParticle01"):GetAbsOrigin(), CVectorMock(1, 2, 3))
+    self:AssertEqual(Entities:FindByName(nil, "MyParticle02"):GetAbsOrigin(), CVectorMock(4, 5, 6))
+    self:AssertEqual(Entities:FindByName(nil, "MyParticle03"):GetAbsOrigin(), CVectorMock(7, 8, 9))
+    self:AssertEqual(Entities:FindByName(nil, "MyParticle04"), nil)
 end
 
 function TestMocksTestSuite:Test_ParticleManager()

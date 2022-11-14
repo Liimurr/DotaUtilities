@@ -15,7 +15,10 @@ local NewChannel = function ()
     function ChannelMetaTable:__call()
         if not self.bIsClosed then
             local SplitCoroutineReturn = function (Head, ...) return Head, {...} end
-            local _, ReturnValues = SplitCoroutineReturn(coroutine.resume(self.CoroutineHandle))
+            local status_, ReturnValues = SplitCoroutineReturn(coroutine.resume(self.CoroutineHandle))
+            if not status_ then
+                print("!!!!!!!!!!!!!!!!!!!!!!!!")
+            end
             if coroutine.status(self.CoroutineHandle) == "dead" then
                 self.bIsClosed = true
                 return nil
