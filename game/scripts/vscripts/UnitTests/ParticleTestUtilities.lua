@@ -120,6 +120,15 @@ function ParticleTestUtilitiesTestSuite:Test_GenerateParticles()
                 [12] = nil
             }
         },
+        [3] = {
+            ParticleIndex = 3,
+            ParticleAssetPath = "particles/particle_asset1.vpk",
+            ParticleAttachMode = 42,
+            OwningEntity = EntitiesMock:FindByName(nil, "particle_a4"),
+            Controls = { 
+                [12] = nil
+            }
+        },
     }
 
     for ParticleIndex, ExpectedParticleValue in pairs(ExpectedParticleValues) do
