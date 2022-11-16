@@ -91,53 +91,217 @@ function ParticleTestUtilitiesTestSuite:Test_GenerateParticles()
     -- ParticleAttachMode = ParticleAttachMode,
     -- OwningEntity = OwningEntity,
     -- Controls = {}
-    local RegisteredPArticles = ParticleManagerMock:_GetRegisteredParticles()
+    local RegisteredParticles = ParticleManagerMock:_GetRegisteredParticles()
     ExpectedParticleValues = {
         [0] = {
             ParticleIndex = 0,
             ParticleAssetPath = "particles/particle_asset1.vpk",
             ParticleAttachMode = 24,
             OwningEntity = EntitiesMock:FindByName(nil, "particle_a1"),
-            Controls = { 
-                [12] = CVectorMock(1, 2, 3)
-            }
+            Controls = {
+                [12] = CVectorMock(1,2,3)
+            },
+            NumControls = 1
         },
         [1] = {
             ParticleIndex = 1,
             ParticleAssetPath = "particles/particle_asset1.vpk",
             ParticleAttachMode = 42,
             OwningEntity = EntitiesMock:FindByName(nil, "particle_a2"),
-            Controls = { 
-                [12] = CVectorMock(4, 5, 6)
-            }
+            Controls = {
+                [12] = CVectorMock(4,5,6)
+            },
+            NumControls = 1
         },
         [2] = {
             ParticleIndex = 2,
             ParticleAssetPath = "particles/particle_asset1.vpk",
             ParticleAttachMode = 24,
             OwningEntity = EntitiesMock:FindByName(nil, "particle_a3"),
-            Controls = { 
-                [12] = nil
-            }
+            Controls = {},
+            NumControls = 0
         },
         [3] = {
             ParticleIndex = 3,
             ParticleAssetPath = "particles/particle_asset1.vpk",
             ParticleAttachMode = 42,
             OwningEntity = EntitiesMock:FindByName(nil, "particle_a4"),
-            Controls = { 
-                [12] = nil
-            }
+            Controls = {},
+            NumControls = 0
+        },
+        [4] = {
+            ParticleIndex = 4,
+            ParticleAssetPath = "particles/particle_asset1.vpk",
+            ParticleAttachMode = 24,
+            OwningEntity = nil,
+            Controls = {
+                [12] = CVectorMock(0,0,0)
+            },
+            NumControls = 1
+        },
+        [5] = {
+            ParticleIndex = 5,
+            ParticleAssetPath = "particles/particle_asset1.vpk",
+            ParticleAttachMode = 42,
+            OwningEntity = nil,
+            Controls = {
+                [12] = CVectorMock(0,0,0)
+            },
+            NumControls = 1
+        },
+        [6] = {
+            ParticleIndex = 6,
+            ParticleAssetPath = "particles/particle_asset1.vpk",
+            ParticleAttachMode = 24,
+            OwningEntity = nil,
+            Controls = {},
+            NumControls = 0
+        },
+        [7] = {
+            ParticleIndex = 7,
+            ParticleAssetPath = "particles/particle_asset1.vpk",
+            ParticleAttachMode = 42,
+            OwningEntity = nil,
+            Controls = {},
+            NumControls = 0
+        },
+        [8] = {
+            ParticleIndex = 8,
+            ParticleAssetPath = "particles/particles_asset2.vpk",
+            ParticleAttachMode = 24,
+            OwningEntity = EntitiesMock:FindByName(nil, "particle_a9"),
+            Controls = {
+                [12] = CVectorMock(0,0,0)
+            },
+            NumControls = 1
+        },
+        [9] = {
+            ParticleIndex = 9,
+            ParticleAssetPath = "particles/particles_asset2.vpk",
+            ParticleAttachMode = 42,
+            OwningEntity = EntitiesMock:FindByName(nil, "particle_a10"),
+            Controls = {
+                [12] = CVectorMock(0,0,0)
+            },
+            NumControls = 1
+        },
+        [10] = {
+            ParticleIndex = 10,
+            ParticleAssetPath = "particles/particles_asset2.vpk",
+            ParticleAttachMode = 24,
+            OwningEntity = EntitiesMock:FindByName(nil, "particle_a11"),
+            Controls = {},
+            NumControls = 0
+        },
+        [11] = {
+            ParticleIndex = 11,
+            ParticleAssetPath = "particles/particles_asset2.vpk",
+            ParticleAttachMode = 42,
+            OwningEntity = EntitiesMock:FindByName(nil, "particle_a12"),
+            Controls = {},
+            NumControls = 0
+        },
+        [12] = {
+            ParticleIndex = 12,
+            ParticleAssetPath = "particles/particles_asset2.vpk",
+            ParticleAttachMode = 24,
+            OwningEntity = nil,
+            Controls = {
+                [12] = CVectorMock(0,0,0)
+            },
+            NumControls = 1
+        },
+        [13] = {
+            ParticleIndex = 13,
+            ParticleAssetPath = "particles/particles_asset2.vpk",
+            ParticleAttachMode = 42,
+            OwningEntity = nil,
+            Controls = {
+                [12] = CVectorMock(0,0,0)
+            },
+            NumControls = 1
+        },
+        [14] = {
+            ParticleIndex = 14,
+            ParticleAssetPath = "particles/particles_asset2.vpk",
+            ParticleAttachMode = 24,
+            OwningEntity = nil,
+            Controls = {},
+            NumControls = 0
+        },
+        [15] = {
+            ParticleIndex = 15,
+            ParticleAssetPath = "particles/particles_asset2.vpk",
+            ParticleAttachMode = 42,
+            OwningEntity = nil,
+            Controls = {},
+            NumControls = 0
         },
     }
 
+    local GetTableCount = function (Table)
+        local Count = 0
+        for _, _ in pairs(Table) do
+            Count = Count + 1
+        end
+        return Count
+    end
+
+    local GetGroundTruth = function ()
+
+        local Out = ""
+        
+        local LexOwningEntity = function (Entity)
+            if not Entity then return "nil" end
+            return "EntitiesMock:FindByName(nil, \""..Entity:GetName().."\")"
+        end
+    
+
+        local LexControls = function (Controls)
+            if GetTableCount(Controls) > 0 then
+                local Out = "{\n"
+                for ControlIndex, ControlValue in pairs(Controls) do
+                    Out = Out.."        ["..ControlIndex.."]".." = CVectorMock("..tostring(ControlValue)..")\n"
+                end
+                Out = Out.."    }"
+                return Out
+            else
+                return "{}"
+            end
+        end
+
+        for ParticleIndex, V in pairs(RegisteredParticles) do
+            Out = Out..string.format(
+                "[%d] = {\n"..
+                "    ParticleIndex = %d,\n"..
+                "    ParticleAssetPath = \"%s\",\n"..
+                "    ParticleAttachMode = %d,\n"..
+                "    OwningEntity = %s,\n"..
+                "    Controls = %s,\n"..
+                "    NumControls = %d\n"..
+                "},\n", 
+            ParticleIndex, 
+            ParticleIndex,
+            V.ParticleAssetPath,
+            V.ParticleAttachMode,
+            LexOwningEntity(V.OwningEntity),
+            LexControls(V.Controls),
+            GetTableCount(V.Controls)
+        )
+        end
+
+        return Out
+    end
+
     for ParticleIndex, ExpectedParticleValue in pairs(ExpectedParticleValues) do
-        self:AssertEqual(RegisteredPArticles[ParticleIndex].ParticleIndex, ExpectedParticleValue.ParticleIndex)
-        self:AssertEqual(RegisteredPArticles[ParticleIndex].ParticleAssetPath, ExpectedParticleValue.ParticleAssetPath)
-        self:AssertEqual(RegisteredPArticles[ParticleIndex].ParticleAttachMode, ExpectedParticleValue.ParticleAttachMode)
-        self:AssertEqual(RegisteredPArticles[ParticleIndex].OwningEntity, ExpectedParticleValue.OwningEntity)
+        ActualValue = RegisteredParticles[ParticleIndex]
+        self:AssertEqual(ActualValue.ParticleIndex, ExpectedParticleValue.ParticleIndex)
+        self:AssertEqual(ActualValue.ParticleAssetPath, ExpectedParticleValue.ParticleAssetPath)
+        self:AssertEqual(ActualValue.ParticleAttachMode, ExpectedParticleValue.ParticleAttachMode)
+        self:AssertEqual(ActualValue.OwningEntity, ExpectedParticleValue.OwningEntity)
+        self:AssertEqual(GetTableCount(ActualValue.Controls), ExpectedParticleValue.NumControls)
         for ControlIndex, ExpectedControlValue in pairs(ExpectedParticleValue.Controls) do
-            self:AssertEqual(RegisteredPArticles[ParticleIndex].Controls[ControlIndex], ExpectedControlValue)
+            self:AssertEqual(ActualValue.Controls[ControlIndex], ExpectedControlValue)
         end
     end
 end
